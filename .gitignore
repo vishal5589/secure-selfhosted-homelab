@@ -1,0 +1,40 @@
+# ── Secrets & environment ───────────────────────────────
+# Never commit real secrets. Only *.example templates are tracked.
+.env
+*.env
+!.env.example
+!*.env.example
+*.key
+*.pem
+*.pfx
+secrets/
+credentials*.json
+
+# ── Service config & state (may contain tokens/keys) ────
+config/
+**/config/
+*.db
+*.sqlite
+*.sqlite3
+config.ini
+settings.json
+
+# n8n
+.n8n/
+n8n-data/
+
+# Docker volumes / runtime
+volumes/
+data/
+
+# ── OS / editor noise ───────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+.idea/
+.vscode/
+
+# ── Logs ────────────────────────────────────────────────
+*.log
+logs/
