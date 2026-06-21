@@ -1,0 +1,16 @@
+# Approval gateway — human-in-the-loop control-plane boundary (ADR-006 / C6)
+# Users request here; nothing downstream runs until a request is approved.
+# Copy ../../.env.example -> .env and fill real values. .env is git-ignored.
+
+services:
+  gateway:
+    image: ghcr.io/seerr-team/seerr:latest   # pin to a digest in production
+    container_name: approval-gateway
+    environment:
+      - TZ=${TZ}
+      - LOG_LEVEL=info
+    ports:
+      - "5055:5055"
+    volumes:
+      - ./config:/app/config       # git-ignored (contains API keys)
+    restart: unless-stopped

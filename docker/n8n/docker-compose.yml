@@ -1,0 +1,20 @@
+# Workflow engine — event router for notifications (ADR-005)
+# Internal-only; not exposed to the internet (reinforced by mesh-VPN ingress).
+# Copy ../../.env.example -> .env and fill real values. .env is git-ignored.
+
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest   # pin to a digest in production
+    container_name: n8n
+    environment:
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}   # encrypts stored credentials at rest
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
+      - N8N_SECURE_COOKIE=true
+      - GENERIC_TIMEZONE=${TZ}
+    ports:
+      - "127.0.0.1:5678:5678"      # bind to loopback; reach over LAN/mesh, not 0.0.0.0
+    volumes:
+      - ./data:/home/node/.n8n     # git-ignored (contains encrypted creds)
+    restart: unless-stopped

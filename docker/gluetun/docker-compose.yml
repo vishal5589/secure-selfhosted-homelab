@@ -1,0 +1,41 @@
+# Controlled egress — fail-closed VPN (security control C3 / ADR-003)
+#
+# The download client runs INSIDE this container's network namespace
+# (network_mode: "service:gluetun"). If the tunnel drops, gluetun's
+# firewall blocks egress — traffic fails CLOSED, never leaking to the
+# host's real connection.
+#
+# Copy ../../.env.example -> .env and fill in real values. .env is git-ignored.
+
+services:
+  gluetun:
+    image: qmcgaw/gluetun:latest      # pin to a digest in production
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN                       # required for the tunnel; nothing more
+    environment:
+      - VPN_SERVICE_PROVIDER=${VPN_PROVIDER}
+      - VPN_TYPE=${VPN_TYPE}
+      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
+      - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
+      - SERVER_COUNTRIES=${SERVER_COUNTRIES}
+      - FIREWALL=on                     # kill-switch: deny by default
+      - TZ=${TZ}
+    ports:
+      - "8080:8080"                     # expose the download client's UI via gluetun only
+    restart: unless-stopped
+
+  download-client:
+    image: lscr.io/linuxserver/qbittorrent:latest   # example client; pin in production
+    container_name: download-client
+    network_mode: "service:gluetun"     # ← all traffic forced through the tunnel
+    depends_on:
+      - gluetun
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ}
+    volumes:
+      - ./config:/config                # git-ignored
+      - ./downloads:/downloads
+    restart: unless-stopped
